@@ -7,6 +7,9 @@ import config
 from .database import db
 from . import models
 
+from .users import User_ns
+from .reviews import Review_ns
+
 app = Flask(__name__)
 app.config.from_object(config)
 
@@ -17,6 +20,9 @@ api = Api(
     description="Nadal's Polzzak_Backend API Server!",
     contact="yghun021007@knu.ac.kr",
 )
+
+api.add_namespace(User_ns)
+api.add_namespace(Review_ns)
 
 db.init_app(app)
 migrate = Migrate()
