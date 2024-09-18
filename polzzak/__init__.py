@@ -2,7 +2,7 @@ from flask import Flask
 from flask_restx import Api
 from flask_migrate import Migrate
 
-import config
+from config import Config
 
 from .database import db
 from . import models
@@ -12,7 +12,7 @@ from .reviews import Review_ns
 from .teams import Team_ns
 
 app = Flask(__name__)
-app.config.from_object(config)
+app.config.from_object(Config)
 
 api = Api(
     app,

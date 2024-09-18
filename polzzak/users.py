@@ -5,9 +5,6 @@ from .models import User
 import requests
 
 import os
-from dotenv import load_dotenv
-# .env 파일에서 환경 변수 불러오기
-load_dotenv()
 
 from flask_sqlalchemy import SQLAlchemy
 
