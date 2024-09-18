@@ -1,23 +1,30 @@
-from flask import Flask, request, jsonify, g, session
+from flask import Flask, request, jsonify, g, session, current_app
 from flask_restx import Resource, fields, reqparse, Namespace
 from . import db
 from .models import User
 import requests
 
 import os
-from dotenv import load_dotenv
-# .env 파일에서 환경 변수 불러오기
-load_dotenv()
 
 from flask_sqlalchemy import SQLAlchemy
+
+def get_kakao_client_id():
+    with current_app.app_context():  # 애플리케이션 컨텍스트 내에서 실행
+        kakao_client_id = current_app.config['KAKAO_CLIENT_ID']
+        return kakao_client_id
+
+def get_kakao_redirect_uri():
+    with current_app.app_context():  # 애플리케이션 컨텍스트 내에서 실행
+        kakao_redirect_uri = current_app.config['KAKAO_REDIRECT_URI']
+        return kakao_redirect_uri
 
 User_ns = Namespace(name="user",description="사용자 인증을 위한 API")
 
 @User_ns.route('/')
 class Users(Resource):
     def get(self):
-        KAKAO_CLIENT_ID = os.getenv('KAKAO_CLIENT_ID')
-        KAKAO_REDIRECT_URI = 'http://polzzak-api.mojan.site/'
+        KAKAO_CLIENT_ID = get_kakao_client_id()
+        KAKAO_REDIRECT_URI = get_kakao_redirect_uri()
         code = request.args.get('code')
 
         # 액세스 토큰 요청
@@ -76,6 +83,8 @@ class Users(Resource):
         })
     
     def post(self):
+        print(session.get('user_id'))
+
         session.clear()  # 세션에 저장된 데이터 삭제
         return {
             'message': 'User logged out successfully',

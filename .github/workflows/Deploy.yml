@@ -19,17 +19,20 @@ jobs:
     - name: Generate config.py
       run: |
         echo "import os" >> config.py
-        echo "BASE_DIR = $BASE_DIR" >> config.py
-        echo "SQLALCHEMY_DATABASE_URI = $SQLALCHEMY_DATABASE_URI" >> config.py
-        echo "SQLALCHEMY_TRACK_MODIFICATIONS = $SQLALCHEMY_TRACK_MODIFICATIONS" >> config.py
-        echo "SECRET_KEY = $SECRET_KEY" >> config.py
-        echo "KAKAO_CLIENT_ID = $KAKAO_CLIENT_ID" >> .env
+        echo "class Config:" >> config.py
+        echo "    BASE_DIR = $BASE_DIR" >> config.py
+        echo "    SQLALCHEMY_DATABASE_URI = $SQLALCHEMY_DATABASE_URI" >> config.py
+        echo "    SQLALCHEMY_TRACK_MODIFICATIONS = $SQLALCHEMY_TRACK_MODIFICATIONS" >> config.py
+        echo "    SECRET_KEY = $SECRET_KEY" >> config.py
+        echo "    KAKAO_CLIENT_ID = '$KAKAO_CLIENT_ID'" >> config.py
+        echo "    KAKAO_REDIRECT_URI = '$API_URL'" >> config.py
       env: 
         BASE_DIR: ${{ secrets.BASE_DIR }}
         SQLALCHEMY_DATABASE_URI: ${{ secrets.SQLALCHEMY_DATABASE_URI }}
         SQLALCHEMY_TRACK_MODIFICATIONS: ${{ secrets.SQLALCHEMY_TRACK_MODIFICATIONS }}
         SECRET_KEY: ${{ secrets.SECRET_KEY }}
         KAKAO_CLIENT_ID: ${{ secrets.KAKAO_CLIENT_ID }}
+        API_URL: ${{ secrets.API_URL }}
 
     - name: Copy Files to Remote Server
       run: |
