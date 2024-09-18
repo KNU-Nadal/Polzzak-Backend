@@ -43,6 +43,7 @@ class Team(db.Model):
     end_time = db.Column(db.DateTime(), nullable=False)
     admin_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
     place_id = db.Column(db.Integer, db.ForeignKey('place.id', ondelete='CASCADE'), nullable=False)
+    user = db.relationship('User', secondary=user_team, backref=db.backref('user_team_set'))
 
 class Event(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -51,6 +52,7 @@ class Event(db.Model):
     start_time = db.Column(db.DateTime(), nullable=False)
     end_time = db.Column(db.DateTime(), nullable=False)
     place_id = db.Column(db.Integer, db.ForeignKey('place.id', ondelete='CASCADE'), nullable=False)
+    user = db.relationship('User', secondary=user_event, backref=db.backref('user_event_set'))
 
 class Market(db.Model):
     id = db.Column(db.Integer, primary_key=True)
