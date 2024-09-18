@@ -19,11 +19,11 @@ jobs:
     - name: Generate config.py
       run: |
         echo "import os" >> config.py
-        echo "BASE_DIR = $BASE_DIR" >> config.py
-        echo "SQLALCHEMY_DATABASE_URI = $SQLALCHEMY_DATABASE_URI" >> config.py
-        echo "SQLALCHEMY_TRACK_MODIFICATIONS = $SQLALCHEMY_TRACK_MODIFICATIONS" >> config.py
-        echo "SECRET_KEY = $SECRET_KEY" >> config.py
         echo "class Config:" >> config.py
+        echo "    BASE_DIR = $BASE_DIR" >> config.py
+        echo "    SQLALCHEMY_DATABASE_URI = $SQLALCHEMY_DATABASE_URI" >> config.py
+        echo "    SQLALCHEMY_TRACK_MODIFICATIONS = $SQLALCHEMY_TRACK_MODIFICATIONS" >> config.py
+        echo "    SECRET_KEY = $SECRET_KEY" >> config.py
         echo "    KAKAO_CLIENT_ID = os.environ.get('$KAKAO_CLIENT_ID')" >> config.py
         echo "    KAKAO_REDIRECT_URI = os.environ.get('$API_URL')" >> config.py
       env: 
