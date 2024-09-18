@@ -113,3 +113,12 @@ class Teams(Resource):
         db.session.commit()
 
         return {'message' : 'Team deleted successfully'}, 200
+    
+@Team_ns.route('/join/')
+class Join(Resource):
+    def get(self):
+        pass
+    def post(self):
+        pass    
+    def delete(self):
+        pass
