@@ -83,7 +83,6 @@ class Users(Resource):
         })
     
     def post(self):
-        print(session.get('user_id'))
 
         session.clear()  # 세션에 저장된 데이터 삭제
         return {
