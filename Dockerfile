@@ -21,9 +21,4 @@ ENV FLASK_APP=polzzak
 ENV FLASK_RUN_HOST=0.0.0.0
 ENV FLASK_RUN_PORT=5000
 
-# FLASK migration 폴더 생성
-RUN flask db init
-RUN flask db migrate
-RUN flask db upgrade
-
 CMD ["flask", "run", "--host=0.0.0.0", "--port=5000"]
