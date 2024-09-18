@@ -21,5 +21,6 @@ ENV FLASK_APP=polzzak
 ENV FLASK_RUN_HOST=0.0.0.0
 ENV FLASK_RUN_PORT=5000
 
-# 컨테이너에서 Flask 실행
+CMD ["flask", "db", "migrate"]
+CMD ["flask", "db", "upgrade"]
 CMD ["flask", "run", "--host=0.0.0.0", "--port=5000"]
