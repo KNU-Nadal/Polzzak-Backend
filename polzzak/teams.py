@@ -37,28 +37,36 @@ class Teams(Resource):
     @Team_ns.expect(teamForm)
     def get(self):
 #1.이 유저가 이미 이 팀에 가입되어있는지 확인을 하고, 가입 되었으면, return  message this user 이미 그거
-        user_id = int(request.args.get('user_id'))
-        
+        user_id = session.get('user_id')
         id = request.args.get('id')
+
         team = Team.query.get_or_404(id)
         user_team_entry = db.session.execute(
             select([user_team]).where(user_team.c.user_id == user_id, user_team.c.team_id == id)
         ).first()
 
         if user_team_entry:
-            return {'message': 'You are already a member of this team.'}, 400
-                
-        return {
-                'message' : 'can modfiy and delete',
-                'team' : {
+            return {'message': 'You are already a member of this team',
+                    'team' : {
                     'id' : team.id,
                     'title' : team.title,
                     'content' : team.content,
                     'start_time' : team.start_time,
                     'end_time' : team.end_time,
                     'place_id' : team.place_id
-                }
-        }, 200
+                }}, 200
+        else:
+            return {
+                    'message' : 'can join this team',
+                    'team' : {
+                        'id' : team.id,
+                        'title' : team.title,
+                        'content' : team.content,
+                        'start_time' : team.start_time,
+                        'end_time' : team.end_time,
+                        'place_id' : team.place_id
+                    }
+            }, 200
 
 
     @Team_ns.expect(team_create_fields)
@@ -74,9 +82,16 @@ class Teams(Resource):
         end_time = datetime.fromisoformat(end_time_str)
         new_team = Team(title=title, content=content, start_time=start_time, end_time=end_time,admin_id=admin_id, place_id=place_id)
 
+        id = db.session.flush()
+
         db.session.add(new_team)
         db.session.commit()
-        return {'message': 'Team created successfully!'}, 201
+
+
+        return {'message': 'Team created successfully!',
+                'team':{
+                    'id': id
+                }}, 201
     
     @Team_ns.expect(team_modify_fields)
     def put(self):
@@ -115,12 +130,10 @@ class Teams(Resource):
 
 userteam_create_fields = Team_ns.model('userteam_create',{
     'team_id':fields.Integer,
-    'user_id':fields.Integer
     })
 
 userteam_delete_fields = Team_ns.model('userteam_delete', {
     'team_id':fields.Integer,
-    'user_id':fields.Integer
     }) 
 
 @Team_ns.route('/join/')
@@ -129,19 +142,20 @@ class Join(Resource):
     @Team_ns.expect(userteam_create_fields)
     def post(self):
         team_id = request.json.get('team_id')
-        user_id = request.json.get('user_id')
-
+        user_id = session.get('user_id')
+        if user_id == 0:
+            return {'message' : 'login plz'}
         # user_team 테이블에 데이터 삽입
         new_user_team = insert(user_team).values(user_id=user_id, team_id=team_id)
         db.session.execute(new_user_team)
-        db.session.commit()   
+        db.session.commit()
         return {'message': 'User added to team successfully'}, 201
     
     # team_id와 user_id를 조건으로 데이터 삭제
     @Team_ns.expect(userteam_delete_fields)
     def delete(self):
         team_id = request.json.get('team_id')
-        user_id = request.json.get('user_id')
+        user_id = session.get('user_id')
 
         # user_team 테이블에서 해당 데이터 삭제
         delete_user_team = delete(user_team).where(user_team.c.user_id == user_id, user_team.c.team_id == team_id)
