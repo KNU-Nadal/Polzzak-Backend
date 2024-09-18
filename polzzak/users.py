@@ -17,7 +17,7 @@ User_ns = Namespace(name="user",description="사용자 인증을 위한 API")
 class Users(Resource):
     def get(self):
         KAKAO_CLIENT_ID = os.getenv('KAKAO_CLIENT_ID')
-        KAKAO_REDIRECT_URI = 'http://127.0.0.1:5001/user'
+        KAKAO_REDIRECT_URI = 'http://polzzak-api.mojan.site/'
         code = request.args.get('code')
 
         # 액세스 토큰 요청
