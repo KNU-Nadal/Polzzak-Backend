@@ -35,6 +35,7 @@ class Place(db.Model):
     latitude = db.Column(db.Float, nullable=False)
     longitude = db.Column(db.Float, nullable=False)
 
+
 class Team(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), unique=True, nullable=False)
@@ -44,6 +45,7 @@ class Team(db.Model):
     admin_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
     place_id = db.Column(db.Integer, db.ForeignKey('place.id', ondelete='CASCADE'), nullable=False)
     user = db.relationship('User', secondary=user_team, backref=db.backref('user_team_set'))
+
 
 class Event(db.Model):
     id = db.Column(db.Integer, primary_key=True)
