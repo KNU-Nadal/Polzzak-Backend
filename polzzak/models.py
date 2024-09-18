@@ -31,9 +31,10 @@ class Review(db.Model):
 
 class Place(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(150), unique=True, nullable=False)
-    latitude = db.Column(db.Float, nullable=False)
-    longitude = db.Column(db.Float, nullable=False)
+    address = db.Column(db.String(150), unique=True, nullable=False) #도로명 주소
+    name = db.Column(db.String(150), unique=True, nullable=False) #상세 주소
+    latitude = db.Column(db.Float, nullable=False) #위도
+    longitude = db.Column(db.Float, nullable=False) #경도
 
 
 class Team(db.Model):
