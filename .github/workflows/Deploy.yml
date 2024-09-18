@@ -23,11 +23,13 @@ jobs:
         echo "SQLALCHEMY_DATABASE_URI = $SQLALCHEMY_DATABASE_URI" >> config.py
         echo "SQLALCHEMY_TRACK_MODIFICATIONS = $SQLALCHEMY_TRACK_MODIFICATIONS" >> config.py
         echo "SECRET_KEY = $SECRET_KEY" >> config.py
+        echo "KAKAO_CLIENT_ID = $KAKAO_CLIENT_ID" >> .env
       env: 
         BASE_DIR: ${{ secrets.BASE_DIR }}
         SQLALCHEMY_DATABASE_URI: ${{ secrets.SQLALCHEMY_DATABASE_URI }}
         SQLALCHEMY_TRACK_MODIFICATIONS: ${{ secrets.SQLALCHEMY_TRACK_MODIFICATIONS }}
         SECRET_KEY: ${{ secrets.SECRET_KEY }}
+        KAKAO_CLIENT_ID: ${{ secrets.KAKAO_CLIENT_ID }}
 
     - name: Copy Files to Remote Server
       run: |
