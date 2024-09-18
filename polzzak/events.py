@@ -77,7 +77,7 @@ class events(Resource):
         end_time = datetime.fromisoformat(end_time_str)
 
         new_event = Event(title=title, content=content, start_time=start_time, end_time=end_time,admin_id=admin_id, place_id=place_id)
-
+     
         db.session.add(new_event)
         db.session.commit()
 
