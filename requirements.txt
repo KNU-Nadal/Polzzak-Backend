@@ -4,4 +4,5 @@ Flask-Migrate==4.0.7
 SQLAlchemy==2.0.31
 Flask-SQLAlchemy==3.1.1
 flask_cors==5.0.0
+requests==2.32.3
 python-dotenv==1.0.1
