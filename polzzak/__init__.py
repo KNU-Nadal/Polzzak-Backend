@@ -10,6 +10,7 @@ from . import models
 from .users import User_ns
 from .reviews import Review_ns
 from .teams import Team_ns
+from .places  import Place_ns
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -25,6 +26,7 @@ api = Api(
 api.add_namespace(User_ns)
 api.add_namespace(Review_ns)
 api.add_namespace(Team_ns)
+api.add_namespace(Place_ns)
 
 db.init_app(app)
 migrate = Migrate()
