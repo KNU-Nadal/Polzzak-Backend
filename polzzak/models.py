@@ -60,3 +60,7 @@ class Event(db.Model):
 class Market(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     place_id = db.Column(db.Integer, db.ForeignKey('place.id', ondelete='CASCADE'), nullable=False)
+
+class Image(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    imgname = title = db.Column(db.String(100), unique=True, nullable=False)
