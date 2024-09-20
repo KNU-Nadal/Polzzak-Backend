@@ -146,8 +146,8 @@ class Join(Resource):
     def post(self):
         event_id = request.json.get('event_id')
         user_id = session.get('user_id')
-        if user_id == 0:
-            return {'message' : 'login plz'}
+        if user_id == None:
+            return {'islogin' : False}
         
         user = User.query.filter_by(id=user_id).first()
         event = event.query.filter_by(id=event_id).first()
@@ -165,7 +165,8 @@ class Join(Resource):
     def delete(self):
         event_id = request.json.get('event_id')
         user_id = session.get('user_id')
-
+        if user_id == None:
+            return {'islogin' : False}
         # user_event 테이블에서 해당 데이터 삭제
         user = User.query.get_or_404(user_id)
         event = event.query.get_or_404(event_id)

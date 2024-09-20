@@ -74,12 +74,17 @@ class Teams(Resource):
 
     @Team_ns.expect(team_create_fields)
     def post(self):
+        user_id = session.get('user_id')
+        if user_id == None:
+            return {'islogin' : False}
+        
         title = request.json.get('title')
         content = request.json.get('content')
         start_time_str = request.json.get('start_time')
         end_time_str = request.json.get('end_time')
         admin_id = session.get('user_id')
         place_id = request.json.get('place_id')
+
 
         start_time = datetime.fromisoformat(start_time_str)
         end_time = datetime.fromisoformat(end_time_str)
@@ -99,6 +104,10 @@ class Teams(Resource):
     
     @Team_ns.expect(team_modify_fields)
     def put(self):
+        user_id = session.get('user_id')
+        if user_id == None:
+            return {'islogin' : False}
+        
         id = request.json.get('id') # 전창우 수정
         title = request.json.get('title')
         content = request.json.get('content')
@@ -124,6 +133,10 @@ class Teams(Resource):
         
     @Team_ns.expect(team_delete_fields)
     def delete(self):
+        user_id = session.get('user_id')
+        if user_id == None:
+            return {'islogin' : False}
+        
         id = request.json.get('id')
         team = Team.query.get(id)
         db.session.delete(team)
@@ -147,8 +160,8 @@ class Join(Resource):
     def post(self):
         team_id = request.json.get('team_id')
         user_id = session.get('user_id')
-        if user_id == 0:
-            return {'message' : 'login plz'}
+        if user_id == None:
+            return {'islogin' : False}
         
         user = User.query.filter_by(id=user_id).first()
         team = Team.query.filter_by(id=team_id).first()
@@ -166,7 +179,8 @@ class Join(Resource):
     def delete(self):
         team_id = request.json.get('team_id')
         user_id = session.get('user_id')
-
+        if user_id == None:
+            return {'islogin' : False}
         # user_team 테이블에서 해당 데이터 삭제
         user = User.query.get_or_404(user_id)
         team = Team.query.get_or_404(team_id)

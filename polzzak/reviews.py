@@ -61,6 +61,8 @@ class Reviews(Resource):
     @Review_ns.expect(review_create_fields)
     def post(self):
         user_id = session.get('user_id')
+        if user_id == None:
+            return {'islogin' : False}
         title = request.json.get('title')
         content = request.json.get('content')
         place_id = request.json.get('place_id')
@@ -78,6 +80,10 @@ class Reviews(Resource):
     
     @Review_ns.expect(review_modify_fields)
     def put(self):
+        user_id = session.get('user_id')
+        if user_id == None:
+            return {'islogin' : False}
+        
         id = request.json.get('id')
         title = request.json.get('title')
         content = request.json.get('content')
@@ -96,6 +102,10 @@ class Reviews(Resource):
 
     @Review_ns.expect(review_delete_fields)
     def delete(self):
+        user_id = session.get('user_id')
+        if user_id == None:
+            return {'islogin' : False}
+        
         id = request.json.get('id')
         review = Review.query.get_or_404(id)
         db.session.delete(review)
