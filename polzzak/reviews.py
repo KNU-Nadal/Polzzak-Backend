@@ -1,7 +1,7 @@
 from flask import Flask, request, session
 from flask_restx import Resource, fields, reqparse, Namespace
 from . import db
-from .models import Review, Place
+from .models import Review, Place, Image
 from .places import Places
 
 Review_ns = Namespace(name="review",description="플로깅 후기 작성을 위한 API")
@@ -16,8 +16,8 @@ review_create_fields = Review_ns.model('review_create', {
     'place': fields.Nested(Review_ns.model('Place', {
         'address': fields.String(default='대구광역시 북구 대학로 80'),
         'name': fields.String(default='경북대학교'),
-        'latitude': fields.Float(default=35.8906),
-        'longtitude': fields.Float(default=128.6121)
+        'lat': fields.Float(default=35.8906),
+        'lng': fields.Float(default=128.6121)
     }), description='Place data')
 })
 
@@ -25,7 +25,13 @@ review_modify_fields = Review_ns.model('review_modify', {
     'id' : fields.Integer,
     'title': fields.String,
     'content': fields.String,
-    'place_id' : fields.Integer
+
+    'place': fields.Nested(Review_ns.model('Place', {
+        'address': fields.String(default='대구광역시 북구 대학로 80'),
+        'name': fields.String(default='경북대학교'),
+        'lat': fields.Float(default=35.8906),
+        'lng': fields.Float(default=128.6121)
+    }), description='Place data')
 }) #리뷰 수정 필드
 
 review_delete_fields = Review_ns.model('review_delete', {
@@ -38,8 +44,9 @@ class Reviews(Resource):
     @Review_ns.expect(reviewForm)
     def get(self):
         id = request.args.get('id')
-        review = Review.query.get_or_404(id)
-        place = Place.query.get_or_404(id)
+        review = Review.query.filter_by(id=id).first()
+        place = Place.query.get(review.place_id)
+        image = Image.query.get(review.image_id)
 
         review_info = {
             'id' : review.id,
@@ -48,8 +55,9 @@ class Reviews(Resource):
             'user_id' : review.user_id,
             'address' : place.address,
             'name' : place.name,
-            'latitude' : place.latitude,
-            'longtitude' : place.longtitude
+            'lat' : place.lat,
+            'lng' : place.lng,
+            'imgname' : image.imgname
         }
 
         if review.user_id == session.get('user_id'):
@@ -59,7 +67,7 @@ class Reviews(Resource):
             }, 200
         else:
             return {
-                'isown' : True,
+                'isown' : False,
                 'review' : review_info
             }, 200
         
@@ -67,7 +75,6 @@ class Reviews(Resource):
     def post(self):
         review_data = Review_ns.payload  # 리뷰 데이터 받기
         place_data = review_data['place']  # 장소 정보 추출
-
         # 장소 POST 함수 호출
         place_post_response = Places().post(place_data=place_data)
         place_id = place_post_response[0]['id']  # 장소 ID 가져오기
@@ -77,7 +84,8 @@ class Reviews(Resource):
             title=review_data['title'],
             content=review_data['content'],
             user_id=session.get('user_id'),  # 임시 사용자 ID
-            place_id=place_id  # 방금 생성된 장소 ID
+            place_id=place_id,  # 방금 생성된 장소 ID
+            image_id=1  # 임시 장소 ID
         )
         db.session.add(new_review)
         db.session.commit()
@@ -107,6 +115,7 @@ class Reviews(Resource):
         id = request.json.get('id')
         review = Review.query.filter_by(id=id).first()
         Places().delete(id=review.place_id)
+        
         db.session.delete(review)
         db.session.commit()
 
