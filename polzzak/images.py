@@ -6,7 +6,7 @@ from .database import db  # 데이터베이스 사용
 from werkzeug.datastructures import FileStorage 
 
 # 이미지 서버 URL 설정
-IMAGE_SERVER_UPLOAD_URL = 'http://172.20.37.116:5002/'
+IMAGE_SERVER_UPLOAD_URL = 'http://localhost:5001/upload'
 Image_ns = Namespace(name="image",description="이미지 업로드를 위한 API")
 
 file_upload_parser = Image_ns.parser()
@@ -16,11 +16,11 @@ file_upload_parser.add_argument('file', location='files', type=FileStorage, requ
 @Image_ns.route('/')
 class Images(Resource):
     @Image_ns.expect(file_upload_parser)
-    def post(self, file=None):
+    def post(self):
         if 'file' not in request.files:
             return jsonify({'error': 'No file part'}), 400
         
-        file = file
+        file = request.files['file']
 
         if file.filename == '':
             return jsonify({'error': 'No selected file'}), 400
