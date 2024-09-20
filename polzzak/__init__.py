@@ -7,7 +7,7 @@ from config import Config
 from .database import db
 from . import models
 
-from .image import Image_ns
+from .images import Image_ns
 from .users import User_ns
 from .reviews import Review_ns
 from .teams import Team_ns
