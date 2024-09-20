@@ -8,16 +8,16 @@ Place_ns = Namespace(name="place",description="플로깅 장소를 위한 API")
 place_create_fields = Place_ns.model('place_create', {
     'address': fields.String(default='대구광역시 북구 대학로 80'),
     'name': fields.String(default='경북대학교'),
-    'latitude': fields.Float(default=35.8906),
-    'longtitude': fields.Float(default=128.6121)
+    'lat': fields.Float(default=35.8906),
+    'lng': fields.Float(default=128.6121)
 }) #장소 생성 필드
 
 place_modify_fields = Place_ns.model('place_modify', {
     'id': fields.Integer,
     'address': fields.String(default='대구광역시 북구 대학로 80'),
     'name': fields.String(default='경북대학교'),
-    'latitude': fields.Float(default=35.8906),
-    'longtitude': fields.Float(default=128.6121)
+    'lat': fields.Float(default=35.8906),
+    'lng': fields.Float(default=128.6121)
 }) #장소 수정 필드
 
 place_delete_fields = Place_ns.model('place_delete', {
@@ -33,8 +33,8 @@ class Places(Resource):
         new_place = Place(
             address=place_data['address'],
             name=place_data['name'],
-            latitude=place_data['latitude'],
-            longtitude=place_data['longtitude']
+            lat=place_data['lat'],
+            lng=place_data['lng']
         )
         db.session.add(new_place)
         db.session.commit()
@@ -48,8 +48,8 @@ class Places(Resource):
         place = Place.query.filter(Place.id==id).first()
         place.address = place_data['address'] 
         place.name = place_data['name']
-        place.latitude = place_data['latitude']
-        place.longtitude = place_data['longtitude']
+        place.lat = place_data['lat']
+        place.lng = place_data['lng']
         db.session.commit()
         return {'message': 'place created successfully'}, 201
         
