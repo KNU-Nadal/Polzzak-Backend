@@ -28,13 +28,14 @@ class Review(db.Model):
     content = db.Column(db.Text(), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
     place_id = db.Column(db.Integer, db.ForeignKey('place.id', ondelete='CASCADE'), nullable=False)
+    image_id = db.Column(db.Integer, db.ForeignKey('image.id', ondelete='CASCADE'), nullable=False)
 
 class Place(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     address = db.Column(db.String(150), nullable=False) #도로명 주소
     name = db.Column(db.String(150), nullable=False) #상세 주소
-    latitude = db.Column(db.Float, nullable=False) #위도
-    longtitude = db.Column(db.Float, nullable=False) #경도
+    lat = db.Column(db.Float, nullable=False) #위도
+    lng = db.Column(db.Float, nullable=False) #경도
 
 
 class Team(db.Model):
@@ -45,6 +46,7 @@ class Team(db.Model):
     end_time = db.Column(db.DateTime(), nullable=False)
     admin_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
     place_id = db.Column(db.Integer, db.ForeignKey('place.id', ondelete='CASCADE'), nullable=False)
+    image_id = db.Column(db.Integer, db.ForeignKey('image.id', ondelete='CASCADE'), nullable=False)
     user = db.relationship('User', secondary=user_team, backref=db.backref('user_team_set'), cascade='all')
 
 
@@ -55,6 +57,7 @@ class Event(db.Model):
     start_time = db.Column(db.DateTime(), nullable=False)
     end_time = db.Column(db.DateTime(), nullable=False)
     place_id = db.Column(db.Integer, db.ForeignKey('place.id', ondelete='CASCADE'), nullable=False)
+    image_id = db.Column(db.Integer, db.ForeignKey('image.id', ondelete='CASCADE'), nullable=False)
     user = db.relationship('User', secondary=user_event, backref=db.backref('user_event_set'), cascade='all')
 
 class Image(db.Model):

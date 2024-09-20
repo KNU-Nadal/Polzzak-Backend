@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: 3f8a9c89fe0c
+Revision ID: 390b800a9684
 Revises: 
-Create Date: 2024-09-20 21:15:02.390173
+Create Date: 2024-09-21 04:42:12.069990
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '3f8a9c89fe0c'
+revision = '390b800a9684'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -28,8 +28,8 @@ def upgrade():
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('address', sa.String(length=150), nullable=False),
     sa.Column('name', sa.String(length=150), nullable=False),
-    sa.Column('latitude', sa.Float(), nullable=False),
-    sa.Column('longtitude', sa.Float(), nullable=False),
+    sa.Column('lat', sa.Float(), nullable=False),
+    sa.Column('lng', sa.Float(), nullable=False),
     sa.PrimaryKeyConstraint('id', name=op.f('pk_place'))
     )
     op.create_table('user',
@@ -47,6 +47,8 @@ def upgrade():
     sa.Column('start_time', sa.DateTime(), nullable=False),
     sa.Column('end_time', sa.DateTime(), nullable=False),
     sa.Column('place_id', sa.Integer(), nullable=False),
+    sa.Column('image_id', sa.Integer(), nullable=False),
+    sa.ForeignKeyConstraint(['image_id'], ['image.id'], name=op.f('fk_event_image_id_image'), ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['place_id'], ['place.id'], name=op.f('fk_event_place_id_place'), ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id', name=op.f('pk_event')),
     sa.UniqueConstraint('title', name=op.f('uq_event_title'))
@@ -57,6 +59,8 @@ def upgrade():
     sa.Column('content', sa.Text(), nullable=False),
     sa.Column('user_id', sa.Integer(), nullable=False),
     sa.Column('place_id', sa.Integer(), nullable=False),
+    sa.Column('image_id', sa.Integer(), nullable=False),
+    sa.ForeignKeyConstraint(['image_id'], ['image.id'], name=op.f('fk_review_image_id_image'), ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['place_id'], ['place.id'], name=op.f('fk_review_place_id_place'), ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['user_id'], ['user.id'], name=op.f('fk_review_user_id_user'), ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id', name=op.f('pk_review'))
@@ -69,7 +73,9 @@ def upgrade():
     sa.Column('end_time', sa.DateTime(), nullable=False),
     sa.Column('admin_id', sa.Integer(), nullable=False),
     sa.Column('place_id', sa.Integer(), nullable=False),
+    sa.Column('image_id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['admin_id'], ['user.id'], name=op.f('fk_team_admin_id_user'), ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['image_id'], ['image.id'], name=op.f('fk_team_image_id_image'), ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['place_id'], ['place.id'], name=op.f('fk_team_place_id_place'), ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id', name=op.f('pk_team')),
     sa.UniqueConstraint('title', name=op.f('uq_team_title'))
