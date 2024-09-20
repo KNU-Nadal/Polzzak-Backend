@@ -1,19 +1,25 @@
 from flask import Flask, request, session
 from flask_restx import Resource, fields, reqparse, Namespace
 from . import db
-from .models import Review
+from .models import Review, Place
+from .places import Places
 
 Review_ns = Namespace(name="review",description="플로깅 후기 작성을 위한 API")
 
 reviewForm = reqparse.RequestParser()
-reviewForm.add_argument('user_id', type=int, default=None, help='user id')
 reviewForm.add_argument('id', type=int, default=None, help='review id')
 
 review_create_fields = Review_ns.model('review_create', {
-    'title': fields.String,
-    'content': fields.String,
-    'place_id' : fields.Integer
-}) #리뷰 생성 필드
+    'title': fields.String(description='Review title'),
+    'content': fields.String(description='Review content'),
+
+    'place': fields.Nested(Review_ns.model('Place', {
+        'address': fields.String(default='대구광역시 북구 대학로 80'),
+        'name': fields.String(default='경북대학교'),
+        'latitude': fields.Float(default=35.8906),
+        'longtitude': fields.Float(default=128.6121)
+    }), description='Place data')
+})
 
 review_modify_fields = Review_ns.model('review_modify', {
     'id' : fields.Integer,
@@ -31,74 +37,78 @@ review_delete_fields = Review_ns.model('review_delete', {
 class Reviews(Resource):
     @Review_ns.expect(reviewForm)
     def get(self):
-        user_id = int(request.args.get('user_id'))
         id = request.args.get('id')
         review = Review.query.get_or_404(id)
+        place = Place.query.get_or_404(id)
 
-        if user_id == session.get('user_id'):
+        review_info = {
+            'id' : review.id,
+            'title' : review.title,
+            'content' : review.content,
+            'user_id' : review.user_id,
+            'address' : place.address,
+            'name' : place.name,
+            'latitude' : place.latitude,
+            'longtitude' : place.longtitude
+        }
+
+        if review.user_id == session.get('user_id'):
             return {
-                'message' : 'can modfiy and delete',
-                'review' : {
-                    'id' : review.id,
-                    'title' : review.title,
-                    'content' : review.content,
-                    'user_id' : review.user_id,
-                    'place_id' : review.place_id
-                }
+                'isown' : True,
+                'review' : review_info
             }, 200
         else:
             return {
-                'message' : 'cannot modfiy and delete',
-                'review' : {
-                    'id' : review.id,
-                    'title' : review.title,
-                    'content' : review.content,
-                    'user_id' : review.user_id,
-                    'place_id' : review.place_id
-                }
+                'isown' : True,
+                'review' : review_info
             }, 200
         
     @Review_ns.expect(review_create_fields)
     def post(self):
-        user_id = session.get('user_id')
-        title = request.json.get('title')
-        content = request.json.get('content')
-        place_id = request.json.get('place_id')
-        new_review = Review(title=title, content=content, user_id=user_id, place_id=place_id)
+        review_data = Review_ns.payload  # 리뷰 데이터 받기
+        place_data = review_data['place']  # 장소 정보 추출
+
+        # 장소 POST 함수 호출
+        place_post_response = Places().post(place_data=place_data)
+        place_id = place_post_response[0]['id']  # 장소 ID 가져오기
+
+        # 리뷰 저장
+        new_review = Review(
+            title=review_data['title'],
+            content=review_data['content'],
+            user_id=session.get('user_id'),  # 임시 사용자 ID
+            place_id=place_id  # 방금 생성된 장소 ID
+        )
         db.session.add(new_review)
         db.session.commit()
 
-        return {'message': 'Review posted successfully',
-                'review':{
-                    'title' : title,
-                    'content' : content,
-                    'user_id' : user_id,
-                    'place_id' : place_id
-                }}, 200
+        return {'review':{
+                    'id': new_review.id
+                }}, 201
     
     @Review_ns.expect(review_modify_fields)
     def put(self):
-        id = request.json.get('id')
-        title = request.json.get('title')
-        content = request.json.get('content')
-        place_id = request.json.get('place_id')
+        review_data = Review_ns.payload  # 팀 데이터 받기
+        place_data = review_data['place']  # 장소 정보 추출
 
-        review = Review.query.filter(Review.id==id).first()
+        review = Review.query.filter_by(id=review_data['id']).first()
 
-        if not review:
-            return {'message' : 'review number <{}> does not exist!'.format(id)}, 404
-        else:
-            review.title = title
-            review.content = content
-            review.place_id = place_id
-            db.session.commit()
-            return {'message' : 'Review modified successfully'}, 200
+        Places().put(id=review.place_id, place_data=place_data) # 장소 수정 함수 
+        review.title = review_data['title']
+        review.content = review_data['content']
+
+        db.session.commit()
+        return {'review':{
+                    'id': review.id
+                }}, 201
 
     @Review_ns.expect(review_delete_fields)
     def delete(self):
         id = request.json.get('id')
-        review = Review.query.get_or_404(id)
+        review = Review.query.filter_by(id=id).first()
+        Places().delete(id=review.place_id)
         db.session.delete(review)
         db.session.commit()
 
-        return {'message' : 'Review deleted successfully'}, 200
+        return {'message' : 'Team deleted successfully'}, 200
+    
