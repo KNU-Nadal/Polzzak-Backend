@@ -5,23 +5,19 @@ from .models import Place
 
 Place_ns = Namespace(name="place",description="플로깅 장소를 위한 API")
 
-placeForm = reqparse.RequestParser()
-#placeForm.add_argument('user_id', type=int, default=None, help='user id')
-#placeForm.add_argument('id', type=int, default=None, help='event id')
-
 place_create_fields = Place_ns.model('place_create', {
-    'address': fields.String,
-    'name': fields.String,
-    'latitude': fields.Float,
-    'longitude': fields.Float
+    'address': fields.String(default='대구광역시 북구 대학로 80'),
+    'name': fields.String(default='경북대학교'),
+    'latitude': fields.Float(default=35.8906),
+    'longtitude': fields.Float(default=128.6121)
 }) #장소 생성 필드
 
 place_modify_fields = Place_ns.model('place_modify', {
     'id': fields.Integer,
-    'address': fields.String,
-    'name': fields.String,
-    'latitude': fields.Float,
-    'longitude': fields.Float
+    'address': fields.String(default='대구광역시 북구 대학로 80'),
+    'name': fields.String(default='경북대학교'),
+    'latitude': fields.Float(default=35.8906),
+    'longtitude': fields.Float(default=128.6121)
 }) #장소 수정 필드
 
 place_delete_fields = Place_ns.model('place_delete', {
@@ -29,76 +25,37 @@ place_delete_fields = Place_ns.model('place_delete', {
 }) #장소 삭제  필드
 
 @Place_ns.route('/')
-class places(Resource):
-    """
-    @Place_ns.expect(placeForm)
-    def get(self):
-        user_id = int(request.args.get('user_id'))
-        id = request.args.get('id')
-        event = event.query.get_or_404(id)
-
-        if user_id == session.get('user_id'):
-            return {
-                'message' : 'can modfiy and delete',
-                'event' : {
-                    'id' : event.id,
-                    'title' : event.title,
-                    'content' : event.content,
-                    'start_time' : event.start_time,
-                    'end_time' : event.end_time,
-                    'place_id' : event.place_id
-                }
-            }, 200
-        else:
-            return {
-                'message' : 'can modfiy and delete',
-                'event' : {
-                    'id' : event.id,
-                    'title' : event.title,
-                    'content' : event.content,
-                    'start_time' : event.start_time,
-                    'end_time' : event.end_time,
-                    'place_id' : event.place_id
-                }
-            }, 200
-"""
-
+class Places(Resource):
     @Place_ns.expect(place_create_fields)
-    def post(self):
-        address = request.json.get('address')
-        name = request.json.get('name')
-        latitude = request.json.get('latitude')
-        longitude = request.json.get('longitude')
-
-        new_place = Place(address = address, name = name, latitude = latitude, longitude = longitude)
-        
+    def post(self, place_data=None):
+        if place_data is None:
+            place_data = Place_ns.payload  # 클라이언트에서 받은 데이터를 사용
+        new_place = Place(
+            address=place_data['address'],
+            name=place_data['name'],
+            latitude=place_data['latitude'],
+            longtitude=place_data['longtitude']
+        )
         db.session.add(new_place)
         db.session.commit()
-
-        return {'message': 'Place created successfully!'}, 201
+        return {'message': 'place created successfully', 'id': new_place.id}, 201
 
     @Place_ns.expect(place_modify_fields)
-    def put(self):
-        id = request.json.get('id')
-        address = request.json.get('address')
-        name = request.json.get('name')
-        latitude = request.json.get('latitude')
-        longitude = request.json.get('longitude')
+    def put(self, id, place_data=None):
+        if place_data is None:
+            place_data = Place_ns.payload
 
         place = Place.query.filter(Place.id==id).first()
-        if not place:
-            return {'message' : 'place number <{}> does not exist!'.format(id)}, 404
-        else:
-            place.address = address 
-            place.name =name 
-            place.latitude = latitude 
-            place.longitude = longitude
-            return {'message' : 'place modified successfully'}, 200
+        place.address = place_data['address'] 
+        place.name = place_data['name']
+        place.latitude = place_data['latitude']
+        place.longtitude = place_data['longtitude']
+        db.session.commit()
+        return {'message': 'place created successfully'}, 201
         
     @Place_ns.expect(place_delete_fields)
-    def delete(self):
-        id = request.json.get('id')
-        place = Place.query.get_or_404(id)
+    def delete(self, id):
+        place = Place.query.filter_by(id=id).first()
         db.session.delete(place)
         db.session.commit()
 
