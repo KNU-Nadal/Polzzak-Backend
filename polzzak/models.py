@@ -31,10 +31,10 @@ class Review(db.Model):
 
 class Place(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    address = db.Column(db.String(150), unique=True, nullable=False) #도로명 주소
-    name = db.Column(db.String(150), unique=True, nullable=False) #상세 주소
+    address = db.Column(db.String(150), nullable=False) #도로명 주소
+    name = db.Column(db.String(150), nullable=False) #상세 주소
     latitude = db.Column(db.Float, nullable=False) #위도
-    longitude = db.Column(db.Float, nullable=False) #경도
+    longtitude = db.Column(db.Float, nullable=False) #경도
 
 
 class Team(db.Model):
@@ -57,10 +57,6 @@ class Event(db.Model):
     place_id = db.Column(db.Integer, db.ForeignKey('place.id', ondelete='CASCADE'), nullable=False)
     user = db.relationship('User', secondary=user_event, backref=db.backref('user_event_set'), cascade='all')
 
-class Market(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    place_id = db.Column(db.Integer, db.ForeignKey('place.id', ondelete='CASCADE'), nullable=False)
-
 class Image(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    imgname = title = db.Column(db.String(100), unique=True, nullable=False)
+    imgname = db.Column(db.String(100), unique=True, nullable=False)
