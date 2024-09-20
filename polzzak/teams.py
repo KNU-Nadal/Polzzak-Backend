@@ -1,31 +1,43 @@
 from flask import Flask, request, session
 from flask_restx import Resource, fields, reqparse, Namespace
 from . import db
-from .models import Team, User, user_team
-from sqlalchemy import select, insert, delete
+from .models import Team, User, Place
 from datetime import datetime
+from .places import Places
 
 Team_ns = Namespace(name="team",description="플로깅 팀을 위한 API")
 
 teamForm = reqparse.RequestParser()
 teamForm.add_argument('id', type=int, default=None, help='team id')
 
-team_create_fields = Team_ns.model('team_create', {
+team_create_fields = Team_ns.model('review_create', {
     'title': fields.String,
     'content': fields.String,
-    'start_time': fields.String(default = '2024-09-24T14:30'),
-    'end_time': fields.String(default = '2024-09-28T14:30'),
-    'place_id': fields.Integer
-}) #리뷰 생성 필드
+    'start_time': fields.String(default='2024-09-25T14:30'),
+    'end_time': fields.String(default='2024-09-29T14:30'),
 
-team_modify_fields = Team_ns.model('team_modify', {
+    'place': fields.Nested(Team_ns.model('Place', {
+        'address': fields.String(default='대구광역시 북구 대학로 80'),
+        'name': fields.String(default='경북대학교'),
+        'latitude': fields.Float(default=35.8906),
+        'longtitude': fields.Float(default=128.6121)
+    }), description='Place data')
+})
+
+team_modify_fields = Team_ns.model('review_modify', {
     'id' : fields.Integer,
     'title': fields.String,
     'content': fields.String,
-    'start_time': fields.String(default = '2024-09-25T14:30'),
-    'end_time': fields.String(default = '2024-09-29T14:30'),
-    'place_id' : fields.Integer
-}) #리뷰 수정 필드
+    'start_time': fields.String(default='2024-09-25T14:30'),
+    'end_time': fields.String(default='2024-09-29T14:30'),
+    
+    'place': fields.Nested(Team_ns.model('Place', {
+        'address': fields.String(default='대구광역시 북구 대학로 80'),
+        'name': fields.String(default='경북대학교'),
+        'latitude': fields.Float(default=35.8906),
+        'longtitude': fields.Float(default=128.6121)
+    }), description='Place data')
+})
 
 team_delete_fields = Team_ns.model('team_delete', {
     'id' : fields.Integer
@@ -35,7 +47,6 @@ team_delete_fields = Team_ns.model('team_delete', {
 class Teams(Resource):
     @Team_ns.expect(teamForm)
     def get(self):
-        #1.이 유저가 이미 이 팀에 가입되어있는지 확인을 하고, 가입 되었으면, return  message this user 이미 그거
         user_id = session.get('user_id')
         id = request.args.get('id')
 
@@ -48,84 +59,94 @@ class Teams(Resource):
         start_time_str = start_time.strftime('%Y-%m-%d %H:%M:%S')
         end_time_str = end_time.strftime('%Y-%m-%d %H:%M:%S')
         # 유저가 팀에 속해 있는지 확인
+        place = Place.query.get_or_404(team.place_id)
+
+        team_info = {
+            'id' : team.id,
+            'title' : team.title,
+            'content' : team.content,
+            'start_time' : start_time_str,
+            'end_time' : end_time_str,
+            'address' : place.address,
+            'name' : place.name,
+            'latitude' : place.latitude,
+            'longtitude' : place.longtitude
+        }
+
         if user and team:
             if team in user.user_team_set:
-                return {'message': 'You are already a member of this team',
-                    'team' : {
-                    'id' : team.id,
-                    'title' : team.title,
-                    'content' : team.content,
-                    'start_time' : start_time_str,
-                    'end_time' : end_time_str,
-                    'place_id' : team.place_id
-                }}, 200
+                if team.admin_id == user_id:
+                    return {
+                        'isteam' : True,
+                        'isadmin' : True,
+                        'team' : team_info
+                    }, 200
+                else:
+                    return {
+                        'isteam' : True,
+                        'isadmin' : False,
+                        'team' : team_info
+                    }, 200
             else:
                 return {
-                    'message' : 'can join this team',
-                    'team' : {
-                        'id' : team.id,
-                        'title' : team.title,
-                        'content' : team.content,
-                        'start_time' : start_time_str,
-                        'end_time' : end_time_str,
-                        'place_id' : team.place_id
-                    }
-            }, 200
+                    'isteam' : False,
+                    'isadmin' : False,
+                    'team' : team_info
+                }, 200
 
     @Team_ns.expect(team_create_fields)
     def post(self):
-        title = request.json.get('title')
-        content = request.json.get('content')
-        start_time_str = request.json.get('start_time')
-        end_time_str = request.json.get('end_time')
-        admin_id = session.get('user_id')
-        place_id = request.json.get('place_id')
+        team_data = Team_ns.payload  # 팀 데이터 받기
+        place_data = team_data['place']  # 장소 정보 추출
 
-        start_time = datetime.fromisoformat(start_time_str)
-        end_time = datetime.fromisoformat(end_time_str)
-        new_team = Team(title=title, content=content, start_time=start_time, end_time=end_time,admin_id=admin_id, place_id=place_id)
+        # 장소 POST 함수 호출
+        place_post_response = Places().post(place_data=place_data)
+        place_id = place_post_response[0]['id']  # 장소 ID 가져오기
 
+        # 팀 저장
+        new_team = Team(
+            title=team_data['title'],
+            content=team_data['content'],
+            admin_id=session.get('user_id'),  # 임시 사용자 ID
+            start_time = datetime.fromisoformat(team_data['start_time']),
+            end_time = datetime.fromisoformat(team_data['end_time']),
+            place_id=place_id  # 방금 생성된 장소 ID
+        )
         db.session.add(new_team)
 
-        user = User.query.filter_by(id=admin_id).first()
+        user = User.query.filter_by(id=session.get('user_id')).first()
         team = Team.query.filter_by(id=new_team.id).first()
         user.user_team_set.append(team)
         db.session.commit()
 
-        return {'message': 'Team created successfully!',
-                'team':{
+        return {'team':{
                     'id': new_team.id
                 }}, 201
     
     @Team_ns.expect(team_modify_fields)
     def put(self):
-        id = request.json.get('id') # 전창우 수정
-        title = request.json.get('title')
-        content = request.json.get('content')
-        start_time_str = request.json.get('start_time')
-        end_time_str = request.json.get('end_time')
-        place_id = request.json.get('place_id')
+        team_data = Team_ns.payload  # 팀 데이터 받기
+        place_data = team_data['place']  # 장소 정보 추출
 
-        start_time = datetime.fromisoformat(start_time_str)
-        end_time = datetime.fromisoformat(end_time_str)
+        team = Team.query.filter_by(id=team_data['id']).first()
 
-        team = Team.query.filter_by(id=id).first()
+        Places().put(id=team.place_id, place_data=place_data) # 장소 수정 함수 호출
 
-        if not team:
-            return {'message' : 'team number <{}> does not exist!'.format(id)}, 404
-        else:
-            team.title = title
-            team.content = content
-            team.start_time = start_time
-            team.end_time = end_time
-            team.place_id = place_id
-            db.session.commit()  # db.session.commit() 추가
-            return {'message' : 'Team modified successfully'}, 200
+        team.title = team_data['title']
+        team.content = team_data['content']
+        team.start_time = datetime.fromisoformat(team_data['start_time'])
+        team.end_time = datetime.fromisoformat(team_data['end_time'])
+        
+        db.session.commit()
+        return {'team':{
+                    'id': team.id
+                }}, 201
         
     @Team_ns.expect(team_delete_fields)
     def delete(self):
         id = request.json.get('id')
-        team = Team.query.get(id)
+        team = Team.query.filter_by(id=id).first()
+        Places().delete(id=team.place_id)
         db.session.delete(team)
         db.session.commit()
 
@@ -138,7 +159,7 @@ userteam_create_fields = Team_ns.model('userteam_create',{
 
 userteam_delete_fields = Team_ns.model('userteam_delete', {
     'team_id':fields.Integer,
-    }) 
+    })
 
 @Team_ns.route('/join/')
 class Join(Resource):
@@ -172,7 +193,8 @@ class Join(Resource):
         team = Team.query.get_or_404(team_id)
 
         if user_id == team.admin_id:
-            team = Team.query.get(team.id)
+            team = Team.query.filter_by(id=team_id).first()
+            Places().delete(id=team.place_id)
             db.session.delete(team)
             db.session.commit()
             return {'message' : 'Team deleted successfully'}, 200
