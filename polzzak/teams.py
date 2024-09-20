@@ -1,9 +1,10 @@
 from flask import Flask, request, session
 from flask_restx import Resource, fields, reqparse, Namespace
 from . import db
-from .models import Team, User, Place
+from .models import Team, User, Place, Image
 from datetime import datetime
 from .places import Places
+from .images import Images
 
 Team_ns = Namespace(name="team",description="플로깅 팀을 위한 API")
 
@@ -19,8 +20,8 @@ team_create_fields = Team_ns.model('review_create', {
     'place': fields.Nested(Team_ns.model('Place', {
         'address': fields.String(default='대구광역시 북구 대학로 80'),
         'name': fields.String(default='경북대학교'),
-        'latitude': fields.Float(default=35.8906),
-        'longtitude': fields.Float(default=128.6121)
+        'lat': fields.Float(default=35.8906),
+        'lng': fields.Float(default=128.6121)
     }), description='Place data')
 })
 
@@ -34,8 +35,8 @@ team_modify_fields = Team_ns.model('review_modify', {
     'place': fields.Nested(Team_ns.model('Place', {
         'address': fields.String(default='대구광역시 북구 대학로 80'),
         'name': fields.String(default='경북대학교'),
-        'latitude': fields.Float(default=35.8906),
-        'longtitude': fields.Float(default=128.6121)
+        'lat': fields.Float(default=35.8906),
+        'lng': fields.Float(default=128.6121)
     }), description='Place data')
 })
 
@@ -60,6 +61,7 @@ class Teams(Resource):
         end_time_str = end_time.strftime('%Y-%m-%d %H:%M:%S')
         # 유저가 팀에 속해 있는지 확인
         place = Place.query.get_or_404(team.place_id)
+        image = Image.query.get_or_404(team.image_id)
 
         team_info = {
             'id' : team.id,
@@ -69,8 +71,9 @@ class Teams(Resource):
             'end_time' : end_time_str,
             'address' : place.address,
             'name' : place.name,
-            'latitude' : place.latitude,
-            'longtitude' : place.longtitude
+            'lat' : place.lat,
+            'lng' : place.lng,
+            'imgname' : image.imgname
         }
 
         if user and team:
@@ -98,7 +101,7 @@ class Teams(Resource):
     def post(self):
         team_data = Team_ns.payload  # 팀 데이터 받기
         place_data = team_data['place']  # 장소 정보 추출
-
+        image_data = team_data['image'] # 이미지 정보 추출
         # 장소 POST 함수 호출
         place_post_response = Places().post(place_data=place_data)
         place_id = place_post_response[0]['id']  # 장소 ID 가져오기
@@ -107,10 +110,11 @@ class Teams(Resource):
         new_team = Team(
             title=team_data['title'],
             content=team_data['content'],
-            admin_id=session.get('user_id'),  # 임시 사용자 ID
+            admin_id=session.get('user_id'),  # 사용자 ID
             start_time = datetime.fromisoformat(team_data['start_time']),
             end_time = datetime.fromisoformat(team_data['end_time']),
-            place_id=place_id  # 방금 생성된 장소 ID
+            place_id=place_id,  # 방금 생성된 장소 ID
+            image_id = 1 # 임시 이미지 아이디
         )
         db.session.add(new_team)
 
@@ -131,7 +135,7 @@ class Teams(Resource):
         team = Team.query.filter_by(id=team_data['id']).first()
 
         Places().put(id=team.place_id, place_data=place_data) # 장소 수정 함수 호출
-
+        
         team.title = team_data['title']
         team.content = team_data['content']
         team.start_time = datetime.fromisoformat(team_data['start_time'])
