@@ -67,11 +67,13 @@ class Reviews(Resource):
 
         if review.user_id == session.get('user_id'):
             return {
+                'islogin' : True,
                 'isown' : True,
                 'review' : review_info
             }, 200
         else:
             return {
+                'islogin' : False,
                 'isown' : False,
                 'review' : review_info
             }, 200
