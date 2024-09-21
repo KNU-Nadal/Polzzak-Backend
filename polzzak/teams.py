@@ -237,4 +237,36 @@ class Teamlist(Resource):
                    'image_name' : image.name}
             teams.append(tmp)
 
-        return {'teams': teams}
+        return {'teams': teams}, 200
+    
+@Team_ns.route('/list/my/')
+class Myteamlist(Resource):
+    def get(self):
+        user_id = session.get('user_id')
+        if user_id == None:
+            return {'islogin' : False}, 401
+        
+        user = User.query.get(user_id)
+
+        user_teams = user.user_team_set
+        myteams = []
+
+        for team in user_teams:
+            admin = User.query.get(team.admin_id)
+            place = Place.query.get(team.place_id)
+            image = Image.query.get(team.image_id)
+
+            tmp = {'id' : team.id,
+                   'title' : team.title,
+                   'content' : team.content,
+                   'start_time' : team.start_time.strftime('%Y-%m-%d %H:%M:%S'),
+                   'end_time' : team.end_time.strftime('%Y-%m-%d %H:%M:%S'),
+                   'admin_name' : admin.name,
+                   'address' : place.address,
+                   'place_name' : place.name,
+                   'lat' : place.lat,
+                   'lng' : place.lng,
+                   'image_name' : image.name}
+            myteams.append(tmp)
+
+        return {'myteams': myteams}, 200

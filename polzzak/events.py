@@ -219,4 +219,34 @@ class Eventlist(Resource):
                    'image_name' : image.name}
             events.append(tmp)
 
-        return {'events': events}
+        return {'events': events}, 200
+    
+@Event_ns.route('/list/my/')
+class Myeventlist(Resource):
+    def get(self):
+        user_id = session.get('user_id')
+        if user_id == None:
+            return {'islogin' : False}, 401
+        
+        user = User.query.get(user_id)
+
+        user_events = user.user_event_set
+        myevents = []
+
+        for event in user_events:
+            place = Place.query.get(event.place_id)
+            image = Image.query.get(event.image_id)
+
+            tmp = {'id' : event.id,
+                   'title' : event.title,
+                   'content' : event.content,
+                   'start_time' : event.start_time.strftime('%Y-%m-%d %H:%M:%S'),
+                   'end_time' : event.end_time.strftime('%Y-%m-%d %H:%M:%S'),
+                   'address' : place.address,
+                   'place_name' : place.name,
+                   'lat' : place.lat,
+                   'lng' : place.lng,
+                   'image_name' : image.name}
+            myevents.append(tmp)
+
+        return {'myevents': myevents}, 200

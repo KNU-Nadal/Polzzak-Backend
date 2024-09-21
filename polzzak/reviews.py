@@ -152,4 +152,35 @@ class Reviewlist(Resource):
                    'image_name' : image.name}
             reviews.append(tmp)
 
-        return {'reviews': reviews}
+        return {'reviews': reviews}, 200
+    
+@Review_ns.route('/list/my/')
+class Myreviewlist(Resource):
+    def get(self):
+        user_id = session.get('user_id')
+        if user_id == None:
+            return {'islogin' : False}, 401
+        
+        user = User.query.get(user_id)
+
+        my_review_list = Review.query.filter(Review.user_id == user_id).all()
+
+        myreviews = []
+
+        for review in my_review_list:
+            user = User.query.get(review.user_id)
+            place = Place.query.get(review.place_id)
+            image = Image.query.get(review.image_id)
+
+            tmp = {'id' : review.id,
+                   'title' : review.title,
+                   'content' : review.content,
+                   'user_name' : user.name,
+                   'address' : place.address,
+                   'place_name' : place.name,
+                   'lat' : place.lat,
+                   'lng' : place.lng,
+                   'image_name' : image.name}
+            myreviews.append(tmp)
+
+        return {'myreviews': myreviews}, 200
