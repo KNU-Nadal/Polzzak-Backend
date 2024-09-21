@@ -9,8 +9,7 @@ def get_image_server_upload_url():
     with current_app.app_context():  # 애플리케이션 컨텍스트 내에서 실행
         image_server_upload_url = current_app.config['IMAGE_SERVER_UPLOAD_URL']
         return image_server_upload_url
-# 이미지 서버 URL 설정
-IMAGE_SERVER_UPLOAD_URL = get_image_server_upload_url()
+
 Image_ns = Namespace(name="image",description="이미지 업로드를 위한 API")
 
 file_upload_parser = Image_ns.parser()
@@ -32,7 +31,7 @@ class Images(Resource):
         try:
             # 이미지 서버로 파일 전송
             files = {'file': (file.filename, file, file.content_type)}
-            response = requests.post(IMAGE_SERVER_UPLOAD_URL, files=files)
+            response = requests.post(get_image_server_upload_url(), files=files)
             response.raise_for_status()  # 서버 오류가 있을 경우 예외 발생
 
             # 응답을 JSON으로 변환하고 파일 이름 추출
