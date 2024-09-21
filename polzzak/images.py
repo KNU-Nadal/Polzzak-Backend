@@ -35,11 +35,12 @@ class Images(Resource):
             response_data = response.json()
             image_name = response_data['file_name']
             # 새 이미지 레코드 생성 및 데이터베이스 저장
-            #new_image = Image(imgname=image_name)
-            new_image = Image(imgname=image_name)
+            #new_image = Image(name=image_name)
+            new_image = Image(name=image_name)
             db.session.add(new_image)
             db.session.commit()
-            return {'message': "Image uploaded successfully", "image_id": new_image.id}, 200
+            return {"image_id": new_image.id,
+                    'image_name' : new_image.name}, 200
         except requests.exceptions.RequestException as e:
             return jsonify({'error': 'Image server communication failed', 'exception': str(e)}), 500
         except Exception as e:

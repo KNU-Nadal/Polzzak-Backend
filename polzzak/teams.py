@@ -4,7 +4,6 @@ from . import db
 from .models import Team, User, Place, Image
 from datetime import datetime
 from .places import Places
-from .images import Images
 
 Team_ns = Namespace(name="team",description="플로깅 팀을 위한 API")
 
@@ -22,7 +21,11 @@ team_create_fields = Team_ns.model('team_create', {
         'name': fields.String(default='경북대학교'),
         'lat': fields.Float(default=35.8906),
         'lng': fields.Float(default=128.6121)
-    }), description='Place data')
+    }), description='Place data'),
+
+    'image': fields.Nested(Team_ns.model('Image',{
+        'id': fields.Integer,
+    }))
 })
 
 team_modify_fields = Team_ns.model('team_modify', {
@@ -48,7 +51,7 @@ team_delete_fields = Team_ns.model('team_delete', {
 class Teams(Resource):
     @Team_ns.expect(teamForm)
     def get(self):
-        user_id = session.get('user_id')
+        user_id = int(session.get('user_id'))
         id = request.args.get('id')
 
         user = User.query.get_or_404(user_id)
@@ -70,10 +73,10 @@ class Teams(Resource):
             'start_time' : start_time_str,
             'end_time' : end_time_str,
             'address' : place.address,
-            'name' : place.name,
+            'place_name' : place.name,
             'lat' : place.lat,
             'lng' : place.lng,
-            'imgname' : image.imgname
+            'image_name' : image.name
         }
 
         if user and team:
@@ -114,7 +117,7 @@ class Teams(Resource):
             start_time = datetime.fromisoformat(team_data['start_time']),
             end_time = datetime.fromisoformat(team_data['end_time']),
             place_id=place_id,  # 방금 생성된 장소 ID
-            image_id = 1 # 임시 이미지 아이디
+            image_id = image_data['id'] # 생성된 이미지 아이디
         )
         db.session.add(new_team)
 

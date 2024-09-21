@@ -1,7 +1,7 @@
 from flask import Flask, request, session
 from flask_restx import Resource, fields, reqparse, Namespace
 from . import db
-from .models import Event, User
+from .models import Event, User, Place, Image
 from datetime import datetime
 
 Event_ns = Namespace(name="event",description="플로깅 이벤트를 위한 API")
@@ -15,8 +15,9 @@ event_create_fields = Event_ns.model('event_create', {
     'content': fields.String,
     'start_time': fields.String,
     'end_time': fields.String,
-    'place_id': fields.Integer
-}) #리뷰 생성 필드
+    'place_id': fields.Integer,
+    'image_id' : fields.Integer
+}) #이벤트 생성 필드
 
 event_modify_fields = Event_ns.model('event_modify', {
     'id' : fields.Integer,
@@ -46,30 +47,43 @@ class Events(Resource):
         # datetime 객체를 문자열로 변환
         start_time_str = start_time.strftime('%Y-%m-%d %H:%M:%S')
         end_time_str = end_time.strftime('%Y-%m-%d %H:%M:%S')
-        # 유저가 팀에 속해 있는지 확인
+
+        place = Place.query.get_or_404(event.place_id)
+        image = Image.query.get_or_404(event.image_id)
+
+        event_info = {
+            'id' : event.id,
+            'title' : event.title,
+            'content' : event.content,
+            'start_time' : start_time_str,
+            'end_time' : end_time_str,
+            'address' : place.address,
+            'place_name' : place.name,
+            'lat' : place.lat,
+            'lng' : place.lng,
+            'image_name' : image.name
+        }
+
         if user and event:
             if event in user.user_event_set:
-                return {'message': 'You are already a member of this event',
-                    'event' : {
-                    'id' : event.id,
-                    'title' : event.title,
-                    'content' : event.content,
-                    'start_time' : start_time_str,
-                    'end_time' : end_time_str,
-                    'place_id' : event.place_id
-                }}, 200
+                if event.admin_id == user_id:
+                    return {
+                        'isevent' : True,
+                        'isevent' : True,
+                        'event' : event_info
+                    }, 200
+                else:
+                    return {
+                        'isevent' : True,
+                        'isevent' : False,
+                        'event' : event_info
+                    }, 200
             else:
                 return {
-                    'message' : 'can join this event',
-                    'event' : {
-                        'id' : event.id,
-                        'title' : event.title,
-                        'content' : event.content,
-                        'start_time' : start_time_str,
-                        'end_time' : end_time_str,
-                        'place_id' : event.place_id
-                    }
-            }, 200
+                    'isevent' : False,
+                    'isevent' : False,
+                    'event' : event_info
+                }, 200
 
     @Event_ns.expect(event_create_fields)
     def post(self):
@@ -79,10 +93,19 @@ class Events(Resource):
         end_time_str = request.json.get('end_time')
         admin_id = session.get('user_id')
         place_id = request.json.get('place_id')
+        image_id = request.json.get('image_id')
 
         start_time = datetime.fromisoformat(start_time_str)
         end_time = datetime.fromisoformat(end_time_str)
-        new_event = Event(title=title, content=content, start_time=start_time, end_time=end_time,admin_id=admin_id, place_id=place_id)
+        new_event = Event(
+            title=title, 
+            content=content, 
+            start_time=start_time, 
+            end_time=end_time,
+            admin_id=admin_id, 
+            place_id=place_id, 
+            image_id=image_id
+        )
      
         db.session.add(new_event)
 

@@ -18,7 +18,11 @@ review_create_fields = Review_ns.model('review_create', {
         'name': fields.String(default='경북대학교'),
         'lat': fields.Float(default=35.8906),
         'lng': fields.Float(default=128.6121)
-    }), description='Place data')
+    }), description='Place data'),
+
+    'image': fields.Nested(Review_ns.model('Image',{
+        'id': fields.Integer,
+    }))
 })
 
 review_modify_fields = Review_ns.model('review_modify', {
@@ -54,10 +58,10 @@ class Reviews(Resource):
             'content' : review.content,
             'user_id' : review.user_id,
             'address' : place.address,
-            'name' : place.name,
+            'place_name' : place.name,
             'lat' : place.lat,
             'lng' : place.lng,
-            'imgname' : image.imgname
+            'image_name' : image.name
         }
 
         if review.user_id == session.get('user_id'):
@@ -75,6 +79,8 @@ class Reviews(Resource):
     def post(self):
         review_data = Review_ns.payload  # 리뷰 데이터 받기
         place_data = review_data['place']  # 장소 정보 추출
+        image_data = image_data['image'] # 이미지 정보 추출
+
         # 장소 POST 함수 호출
         place_post_response = Places().post(place_data=place_data)
         place_id = place_post_response[0]['id']  # 장소 ID 가져오기
@@ -85,7 +91,7 @@ class Reviews(Resource):
             content=review_data['content'],
             user_id=session.get('user_id'),  # 임시 사용자 ID
             place_id=place_id,  # 방금 생성된 장소 ID
-            image_id=1  # 임시 장소 ID
+            image_id=image_data['id']  # 임시 장소 ID
         )
         db.session.add(new_review)
         db.session.commit()
