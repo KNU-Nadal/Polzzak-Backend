@@ -11,7 +11,7 @@ Team_ns = Namespace(name="team",description="플로깅 팀을 위한 API")
 teamForm = reqparse.RequestParser()
 teamForm.add_argument('id', type=int, default=None, help='team id')
 
-team_create_fields = Team_ns.model('review_create', {
+team_create_fields = Team_ns.model('team_create', {
     'title': fields.String,
     'content': fields.String,
     'start_time': fields.String(default='2024-09-25T14:30'),
@@ -25,7 +25,7 @@ team_create_fields = Team_ns.model('review_create', {
     }), description='Place data')
 })
 
-team_modify_fields = Team_ns.model('review_modify', {
+team_modify_fields = Team_ns.model('team_modify', {
     'id' : fields.Integer,
     'title': fields.String,
     'content': fields.String,
