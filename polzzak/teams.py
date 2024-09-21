@@ -62,7 +62,8 @@ class Teams(Resource):
         # datetime 객체를 문자열로 변환
         start_time_str = start_time.strftime('%Y-%m-%d %H:%M:%S')
         end_time_str = end_time.strftime('%Y-%m-%d %H:%M:%S')
-        # 유저가 팀에 속해 있는지 확인
+
+        admin = User.query.get(team.admin_id)
         place = Place.query.get_or_404(team.place_id)
         image = Image.query.get_or_404(team.image_id)
 
@@ -72,6 +73,7 @@ class Teams(Resource):
             'content' : team.content,
             'start_time' : start_time_str,
             'end_time' : end_time_str,
+            'admin_id' : admin.name,
             'address' : place.address,
             'place_name' : place.name,
             'lat' : place.lat,
