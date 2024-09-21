@@ -1,12 +1,16 @@
-from flask import request, jsonify
+from flask import request, jsonify, current_app
 import requests  # 이미지 서버와의 통신을 위해 필요
 from flask_restx import Namespace, Resource
 from .models import Image  # Image 모델 가져오기
 from .database import db  # 데이터베이스 사용
 from werkzeug.datastructures import FileStorage 
 
+def get_image_server_upload_url():
+    with current_app.app_context():  # 애플리케이션 컨텍스트 내에서 실행
+        image_server_upload_url = current_app.config['IMAGE_SERVER_UPLOAD_URL']
+        return image_server_upload_url
 # 이미지 서버 URL 설정
-IMAGE_SERVER_UPLOAD_URL = 'http://localhost:5001/upload'
+IMAGE_SERVER_UPLOAD_URL = get_image_server_upload_url()
 Image_ns = Namespace(name="image",description="이미지 업로드를 위한 API")
 
 file_upload_parser = Image_ns.parser()
