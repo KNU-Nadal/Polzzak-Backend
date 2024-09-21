@@ -195,3 +195,28 @@ class Join(Resource):
                 user.user_event_set.remove(event)  # 관계 제거
                 db.session.commit()  # 변경 사항 커밋
                 return {'message': 'User removed from event successfully'}, 200
+
+
+@Event_ns.route('/list/')
+class Eventlist(Resource):
+    def get(self):
+        event_list = Event.query.all()
+        events = []
+
+        for event in event_list:
+            place = Place.query.get(event.place_id)
+            image = Image.query.get(event.image_id)
+
+            tmp = {'id' : event.id,
+                   'title' : event.title,
+                   'content' : event.content,
+                   'start_time' : event.start_time.strftime('%Y-%m-%d %H:%M:%S'),
+                   'end_time' : event.end_time.strftime('%Y-%m-%d %H:%M:%S'),
+                   'address' : place.address,
+                   'place_name' : place.name,
+                   'lat' : place.lat,
+                   'lng' : place.lng,
+                   'image_name' : image.name}
+            events.append(tmp)
+
+        return {'events': events}
