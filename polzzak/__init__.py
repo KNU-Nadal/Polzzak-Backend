@@ -15,7 +15,7 @@ from .events import Event_ns
 
 app = Flask(__name__)
 app.config.from_object(Config)
-app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 100  # 최대 100MB로 설정
+app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1000  # 최대 100MB로 설정
 CORS(app)
 
 api = Api(
