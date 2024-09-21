@@ -13,6 +13,7 @@ from .reviews import Review_ns
 from .teams import Team_ns
 from .places  import Place_ns
 from .events import Event_ns
+from .reviewList import ReviewList_ns
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -31,6 +32,7 @@ api.add_namespace(Team_ns)
 api.add_namespace(Place_ns)
 api.add_namespace(Event_ns)
 api.add_namespace(Image_ns)
+api.add_namespace(ReviewList_ns)
 
 db.init_app(app)
 migrate = Migrate()
