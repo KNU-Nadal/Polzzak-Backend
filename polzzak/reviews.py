@@ -1,7 +1,7 @@
 from flask import Flask, request, session
 from flask_restx import Resource, fields, reqparse, Namespace
 from . import db
-from .models import Review, Place, Image
+from .models import Review, Place, Image, User
 from .places import Places
 
 Review_ns = Namespace(name="review",description="플로깅 후기 작성을 위한 API")
@@ -49,6 +49,7 @@ class Reviews(Resource):
     def get(self):
         id = request.args.get('id')
         review = Review.query.filter_by(id=id).first()
+        user = User.query.get(review.user_id)
         place = Place.query.get(review.place_id)
         image = Image.query.get(review.image_id)
 
@@ -56,7 +57,7 @@ class Reviews(Resource):
             'id' : review.id,
             'title' : review.title,
             'content' : review.content,
-            'user_id' : review.user_id,
+            'user_name' : user.name,
             'address' : place.address,
             'place_name' : place.name,
             'lat' : place.lat,
@@ -79,7 +80,7 @@ class Reviews(Resource):
     def post(self):
         review_data = Review_ns.payload  # 리뷰 데이터 받기
         place_data = review_data['place']  # 장소 정보 추출
-        image_data = image_data['image'] # 이미지 정보 추출
+        image_data = review_data['image'] # 이미지 정보 추출
 
         # 장소 POST 함수 호출
         place_post_response = Places().post(place_data=place_data)
