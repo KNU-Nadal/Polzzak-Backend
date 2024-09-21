@@ -45,7 +45,7 @@ event_create_fields = Event_ns.model('event_create', {
 class Events(Resource):
     @Event_ns.expect(eventForm)
     def get(self):
-        user_id = int(session.get('user_id'))
+        user_id = session.get('user_id')
         id = request.args.get('id')
         event = Event.query.get(id)
         start_time = event.start_time
@@ -56,7 +56,6 @@ class Events(Resource):
 
         place = Place.query.get(event.place_id)
         image = Image.query.get(event.image_id)
-        user = User.query.get(user_id)
 
         event_info = {
             'id' : event.id,
@@ -71,25 +70,27 @@ class Events(Resource):
             'image_name' : image.name
         }
 
-        if user and event:
-            if event in user.user_event_set:
-                return {
-                    'isevent' : True,
-                    'islogin' : True,
-                    'event' : event_info
-                }, 200
-            else:
-                return {
-                    'isevent' : False,
-                    'islogin' : True,
-                    'event' : event_info
-                }, 200
-        else:
+        if user_id == None:
             return {
                     'isevent' : False,
                     'islogin' : False,
                     'event' : event_info
                 }, 200
+
+        user = User.query.get(user_id)
+        if event in user.user_event_set:
+            return {
+                'isevent' : True,
+                'islogin' : True,
+                'event' : event_info
+            }, 200
+        else:
+            return {
+                'isevent' : False,
+                'islogin' : True,
+                'event' : event_info
+            }, 200
+            
 
     @Event_ns.expect(event_create_fields)
     def post(self):
