@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, session, current_app
+from flask import Flask, request, jsonify, session, current_app, redirect
 from flask_restx import Resource, Namespace
 from . import db
 from .models import User
@@ -69,14 +69,7 @@ class Users(Resource):
             session['user_id'] = new_user.id
 
         # 사용자 정보를 json으로 반환
-        return jsonify({
-            'message': 'User logged in successfully',
-            'user': {
-                'id': kakao_id,
-                'name': name,
-                'profile_image': profile_image
-            }
-        })
+        return redirect('http://polzzak.mojan.site/')
     
     def post(self):
 
