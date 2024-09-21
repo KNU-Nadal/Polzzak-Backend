@@ -1,12 +1,8 @@
-from flask import Flask, request, jsonify, g, session, current_app
-from flask_restx import Resource, fields, reqparse, Namespace
+from flask import Flask, request, jsonify, session, current_app
+from flask_restx import Resource, Namespace
 from . import db
 from .models import User
 import requests
-
-import os
-
-from flask_sqlalchemy import SQLAlchemy
 
 def get_kakao_client_id():
     with current_app.app_context():  # 애플리케이션 컨텍스트 내에서 실행
