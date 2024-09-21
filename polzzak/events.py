@@ -75,11 +75,19 @@ class Events(Resource):
             if event in user.user_event_set:
                 return {
                     'isevent' : True,
+                    'islogin' : True,
                     'event' : event_info
                 }, 200
             else:
                 return {
                     'isevent' : False,
+                    'islogin' : True,
+                    'event' : event_info
+                }, 200
+        else:
+            return {
+                    'isevent' : False,
+                    'islogin' : False,
                     'event' : event_info
                 }, 200
 
