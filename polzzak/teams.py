@@ -51,10 +51,9 @@ team_delete_fields = Team_ns.model('team_delete', {
 class Teams(Resource):
     @Team_ns.expect(teamForm)
     def get(self):
-        user_id = int(session.get('user_id'))
+        user_id = session.get('user_id')
         id = request.args.get('id')
 
-        user = User.query.get_or_404(user_id)
         team = Team.query.get_or_404(id)
 
         start_time = team.start_time
@@ -81,26 +80,26 @@ class Teams(Resource):
             'image_name' : image.name
         }
 
-        if user and team:
-            if team in user.user_team_set:
-                if team.admin_id == user_id:
-                    return {
-                        'isteam' : True,
-                        'isadmin' : True,
-                        'team' : team_info
-                    }, 200
-                else:
-                    return {
-                        'isteam' : True,
-                        'isadmin' : False,
-                        'team' : team_info
-                    }, 200
-            else:
-                return {
-                    'isteam' : False,
-                    'isadmin' : False,
+        if user_id == None:
+            return {
+                    'isevent' : False,
+                    'islogin' : False,
                     'team' : team_info
                 }, 200
+
+        user = User.query.get(user_id)
+        if team in user.user_event_set:
+            return {
+                'isevent' : True,
+                'islogin' : True,
+                'team' : team_info
+            }, 200
+        else:
+            return {
+                'isevent' : False,
+                'islogin' : True,
+                'team' : team_info
+            }, 200
 
     @Team_ns.expect(team_create_fields)
     def post(self):
@@ -213,3 +212,29 @@ class Join(Resource):
                 user.user_team_set.remove(team)  # 관계 제거
                 db.session.commit()  # 변경 사항 커밋
                 return {'message': 'User removed from team successfully'}, 200
+            
+@Team_ns.route('/list/')
+class Teamlist(Resource):
+    def get(self):
+        team_list = Team.query.all()
+        teams = []
+
+        for team in team_list:
+            admin = User.query.get(team.admin_id)
+            place = Place.query.get(team.place_id)
+            image = Image.query.get(team.image_id)
+
+            tmp = {'id' : team.id,
+                   'title' : team.title,
+                   'content' : team.content,
+                   'start_time' : team.start_time.strftime('%Y-%m-%d %H:%M:%S'),
+                   'end_time' : team.end_time.strftime('%Y-%m-%d %H:%M:%S'),
+                   'admin_name' : admin.name,
+                   'address' : place.address,
+                   'place_name' : place.name,
+                   'lat' : place.lat,
+                   'lng' : place.lng,
+                   'image_name' : image.name}
+            teams.append(tmp)
+
+        return {'teams': teams}
