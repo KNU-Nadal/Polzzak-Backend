@@ -26,6 +26,7 @@ jobs:
         echo "    SECRET_KEY = $SECRET_KEY" >> config.py
         echo "    KAKAO_CLIENT_ID = '$KAKAO_CLIENT_ID'" >> config.py
         echo "    KAKAO_REDIRECT_URI = '$API_URL'" >> config.py
+        echo "    IMAGE_SERVER_UPLOAD_URL = '$IMAGE_SERVER_UPLOAD_URL'" >> config.py
       env: 
         BASE_DIR: ${{ secrets.BASE_DIR }}
         SQLALCHEMY_DATABASE_URI: ${{ secrets.SQLALCHEMY_DATABASE_URI }}
@@ -33,6 +34,7 @@ jobs:
         SECRET_KEY: ${{ secrets.SECRET_KEY }}
         KAKAO_CLIENT_ID: ${{ secrets.KAKAO_CLIENT_ID }}
         API_URL: ${{ secrets.API_URL }}
+        IMAGE_SERVER_UPLOAD_URL: ${{ secrets.IMAGE_SERVER_UPLOAD_URL }}
 
     - name: Copy Files to Remote Server
       run: |
