@@ -16,7 +16,7 @@ from .events import Event_ns
 app = Flask(__name__)
 app.config.from_object(Config)
 app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1000  # 최대 100MB로 설정
-CORS(app, supports_credentials=True, origins="localhost:5173")
+CORS(app, supports_credentials=True, origins=["http://localhost:5173", "http://polzzak.mojan.site"])
 
 api = Api(
     app,
