@@ -69,7 +69,7 @@ class Users(Resource):
             session['user_id'] = new_user.id
 
         # 사용자 정보를 json으로 반환
-        return redirect('http://polzzak.mojan.site/')
+        return redirect('https://polzzak.mojan.kr/')
     
     def post(self):
 
