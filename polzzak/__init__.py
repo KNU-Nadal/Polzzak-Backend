@@ -1,7 +1,7 @@
 from flask import Flask
 from flask_restx import Api
 from flask_migrate import Migrate
-
+from flask_cors import CORS
 from config import Config
 
 from .database import db
@@ -15,6 +15,7 @@ from .events import Event_ns
 app = Flask(__name__)
 app.config.from_object(Config)
 app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1000  # 최대 100MB로 설정
+CORS(app)
 
 api = Api(
     app,
